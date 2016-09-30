@@ -1,9 +1,14 @@
 # binja-ui-tweaks
 UI Tweaks for Binary Ninja. Seems kinda stable, I just got it working, so there may be some things that I missed. 
 
+Stability could be totally killed by any future updates to Binary Ninja, so take caution applying tweaks after an update.
+
 # Dependencies 
 
-Requires the [binja-ui-api plugin](github.com/nbsdx/binja-ui-api) (and obviously all of it's dependencies)
+1. Ubuntu 16.04 (only platform tested)
+2. Binary Ninja
+3. PyQt5 (Ubuntu Repo Version)
+4. [binja-ui-api](github.com/nbsdx/binja-ui-api)
 
 # Usage
 
