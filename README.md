@@ -8,7 +8,7 @@ Stability could be totally killed by any future updates to Binary Ninja, so take
 1. Ubuntu 16.04 (only platform tested)
 2. Binary Ninja
 3. PyQt5 (Ubuntu Repo Version)
-4. [binja-ui-api](github.com/nbsdx/binja-ui-api)
+4. [binja-ui-api](http://www.github.com/nbsdx/binja-ui-api)
 
 # Usage
 
