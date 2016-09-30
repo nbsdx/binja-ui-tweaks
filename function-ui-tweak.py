@@ -39,10 +39,14 @@ def tweakFunctionList(bv):
         """
         class MyEventFilter(QtCore.QObject):
 
-            def __init__(self, view):
+            def __init__(self, old_view, view, edit):
                 QtCore.QObject.__init__(self, None)
+                self.old_view = old_view
                 self.view = view
+                self.edit = edit
                 self.ignore = False
+                self.isSearching = False
+                self.originalPosition = None
 
             def eventFilter(self, obj, evt):
                 # We're infinite looping when we notify
@@ -51,13 +55,32 @@ def tweakFunctionList(bv):
                 if self.ignore:
                     return super(MyEventFilter,self).eventFilter(obj,evt)
 
-                if not (evt.type() == QtCore.QEvent.KeyPress):
-                    return False
+                # Get the keypresses on the QTableView we make. For some reason
+                # we can't see them...
+                if (obj == self.view) and (evt.type() == QtCore.QEvent.KeyPress):
 
-                if obj == self.view:
+                    if not self.isSearching:
+                        self.originalPosition = view.verticalScrollBar().sliderPosition()
+
+                    self.isSearching = True
                     self.ignore = True
                     ui._app().notify(self.view, evt)
                     self.ignore = False
+                    return True
+
+                # Refocus on the function list when the line edit hides itself
+                elif (obj == self.edit) and (evt.type() == QtCore.QEvent.Hide):
+                    self.isSearching = False
+                    view.setFocus(Qt.ActiveWindowFocusReason)
+                    if self.originalPosition:
+                        view.verticalScrollBar().setSliderPosition(self.originalPosition)
+                        self.originalPosition = None
+
+                    return True
+
+                # Handle Font Changes
+                elif (obj == self.old_view) and (evt.type() == QtCore.QEvent.FontChange):
+                    self.view.setFont(self.old_view.font())
                     return True
 
                 return super(MyEventFilter,self).eventFilter(obj, evt)
@@ -105,7 +128,7 @@ def tweakFunctionList(bv):
 
         # For some reason, our QTableView isn't getting events. Install this EventFilter
         # globally (very hacky) and intercept any events triggered by the new QTableView
-        view.evtFilter = MyEventFilter(view)
+        view.evtFilter = MyEventFilter(list_view, view, [x for x in func_list.children() if x.__class__ is QtWidgets.QLineEdit][0])
         ui._app().installEventFilter(view.evtFilter)
 
         # Add our new QTableView to the function widget.
@@ -122,6 +145,8 @@ def tweakFunctionList(bv):
         sorter = QtCore.QSortFilterProxyModel(func_list)
         sorter.setSourceModel(model)
         sorter.setSortCaseSensitivity(Qt.CaseInsensitive)
+
+        # TODO: Recenter view on active function
 
         # Configure our new QTableView
         view.setModel(sorter)
