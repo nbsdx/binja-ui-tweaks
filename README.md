@@ -1,3 +1,7 @@
+# **BROKEN**
+
+Currently, if you sort, sizes and selected items aren't respected, so the left splitter will fully colapse, and clicking on functions won't always take you to the right one...
+
 # binja-ui-tweaks
 UI Tweaks for Binary Ninja. Seems kinda stable, I just got it working, so there may be some things that I missed. 
 
@@ -30,5 +34,6 @@ Location: `Tools -> Tweak Function List`
 
 ### Bugs
 
-1. Will only work for one view. Whichever view that is is probably random if you have more than one open. I sugest not using more than one view with this tweak currently
+1. Basically everything.
+2. Will only work for one view. Whichever view that is is probably random if you have more than one open. I sugest not using more than one view with this tweak currently
   * You might be able to enable the tweak, then open another view, but you probaly won't be able to enable the tweak for the new tab.
