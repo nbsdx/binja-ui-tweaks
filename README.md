@@ -3,6 +3,10 @@ UI Tweaks for Binary Ninja. Seems kinda stable, I just got it working, so there 
 
 Stability could be totally killed by any future updates to Binary Ninja, so take caution applying tweaks after an update.
 
+# Suggestions
+
+If you have suggestions for UI modifications, open a pull request and we can talk about it :)
+
 # Dependencies 
 
 1. Ubuntu 16.04 (only platform tested)
