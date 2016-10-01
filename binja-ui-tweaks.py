@@ -7,7 +7,7 @@ from BinjaUI import Components
 
 import binaryninja as bn
 
-def tweakFunctionList(bv):
+def tweakFunctionList(bv, current_function):
 
     def AddNewView():
 
@@ -105,14 +105,13 @@ def tweakFunctionList(bv):
                 if there's more than one available.
             """
             def onActivated(self, index):
-                print self.sourceModel().data(index)
-                symbols = bv.get_symbols_by_name(self.sourceModel().data(index))
+                symbols = bv.get_symbols_by_name(self.data(index))
 
                 if len(symbols) == 1:
                     bv.file.navigate(bv.file.view, symbols[0].address)
 
                 elif len(symbols) == 0:
-                    print "No symbol with name [[{}]] found".format(self.sourceModel().data(index))
+                    print "No symbol with name [[{}]] found".format(self.data(index))
 
                 else:
                     print "Multiple symbols found"
@@ -136,17 +135,9 @@ def tweakFunctionList(bv):
 
         # Setup our proxy model
         orig_model = list_view.model()
-        model = MyModel()
-        view.activated.connect(model.onActivated)
-        model.setSourceModel(orig_model)
-
-        # This proxy model might be redundant, but I was having issues with
-        # the headerData not being respected. I'm leaving it for now.
-        sorter = QtCore.QSortFilterProxyModel(func_list)
-        sorter.setSourceModel(model)
-        sorter.setSortCaseSensitivity(Qt.CaseInsensitive)
-
-        # TODO: Recenter view on active function
+        sorter = MyModel()
+        view.activated.connect(sorter.onActivated)
+        sorter.setSourceModel(orig_model)
 
         # Configure our new QTableView
         view.setModel(sorter)
@@ -157,18 +148,24 @@ def tweakFunctionList(bv):
         view.horizontalHeader().setStretchLastSection(True)
 
         # Get the active font, and apply it to this widget.
-        # TODO: If the font changes, we should update it somehow...
         fm = QtGui.QFontMetrics(list_view.font())
         view.verticalHeader().setDefaultSectionSize(fm.height())
 
         # Sort the contents initially
-        sorter.sort(Qt.DescendingOrder)
+        view.sortByColumn(0, Qt.AscendingOrder)
 
         # Hide the original view
         list_view.hide()
 
         # Show our view :D
         view.show()
+
+        # Recenter view on active function
+        func_name = current_function.symbol.full_name
+        index_list = sorter.match(sorter.index(0,0), Qt.DisplayRole, func_name, -1, QtCore.Qt.MatchExactly)
+        if len(index_list) != 0:
+            view.scrollTo(index_list[0], QtWidgets.QAbstractItemView.PositionAtCenter)
+            print sorter.itemData(index_list[0])
 
         return view
 
@@ -178,5 +175,5 @@ def tweakFunctionList(bv):
 
 
 #Util.AddMenuTree( {'Mod Func Win' : setupUI} )
-bn.PluginCommand.register("Tweak Function List", "Tweak Function List", tweakFunctionList)
+bn.PluginCommand.register_for_function("Tweak Function List", "Tweak Function List", tweakFunctionList)
 print "binja-ui-tweaks done loading"
