@@ -32,3 +32,13 @@ Location: `Tools -> Tweak Function List`
 
 1. Will only work for one view. Whichever view that is is probably random if you have more than one open. I sugest not using more than one view with this tweak currently
   * You might be able to enable the tweak, then open another view, but you probaly won't be able to enable the tweak for the new tab.
+
+## Function Graph Preview
+
+Location: `Tools -> Add Graph Preview`
+
+* Gives you a high-level overview of your function - similar to IDA's
+
+### Bugs
+
+1. No known bugs

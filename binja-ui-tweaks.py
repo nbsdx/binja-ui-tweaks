@@ -7,9 +7,71 @@ from BinjaUI import Components
 
 import binaryninja as bn
 
+refs = []
+font_object = None
+
+leakedFunction = None
+leakFunctionAction = None
+
+is_initialized = False
+
+def leakCurrentFunction(bv, current_function):
+    global leakedFunction
+    leakedFunction = current_function
+
+def CurrentFunction():
+    global leakedFunction
+    global leakFunctionAction
+
+    if leakFunctionAction:
+        leakFunctionAction.trigger()
+
+    return leakedFunction
+
+"""
+    Makes sure "CurrentFunction" is enabled, and does some cleanup
+"""
+def Initialize():
+    global is_initialized
+    global leakFunctionAction
+
+    if is_initialized:
+        return
+
+    toolsMenu = ui.Components.Menu("Tools")
+
+    for a in toolsMenu.actions():
+        if a.text() == "__leak_function":
+            a.setVisible(False)
+            leakFunctionAction = a
+
+    menus = [x for x in ui._app().allWidgets() if x.__class__ is QtWidgets.QMenu]
+
+
+    # TODO: the right-click menus are generated dynamically,
+    # need to intercept them and remove our secret actions
+    for x in menus:
+        if toolsMenu == x:
+            continue
+        for a in x.actions():
+            if a.text() == "__leak_function":
+                a.setVisible(False)
+                x.removeAction(a)
+                break
+
+    is_initialized = True
+
+"""
+
+    Tweak Function Window
+
+"""
 def tweakFunctionList(bv, current_function):
 
+    Initialize()
+
     def AddNewView():
+        global font_object
 
         """
             Custom Table View so we can sort the function list.
@@ -80,6 +142,8 @@ def tweakFunctionList(bv, current_function):
 
                 # Handle Font Changes
                 elif (obj == self.old_view) and (evt.type() == QtCore.QEvent.FontChange):
+                    global font_object
+                    font_object = self.old_view.font()
                     self.view.setFont(self.old_view.font())
                     return True
 
@@ -142,6 +206,8 @@ def tweakFunctionList(bv, current_function):
         # Configure our new QTableView
         view.setModel(sorter)
         view.setFont(list_view.font())
+        font_object = list_view.font()
+
         view.setShowGrid(False)
         view.setSortingEnabled(True)
         view.verticalHeader().setVisible(False)
@@ -167,6 +233,8 @@ def tweakFunctionList(bv, current_function):
             view.scrollTo(index_list[0], QtWidgets.QAbstractItemView.PositionAtCenter)
             print sorter.itemData(index_list[0])
 
+        refs.append(view)
+
         return view
 
     # Inject our changes into the GUI.
@@ -174,6 +242,166 @@ def tweakFunctionList(bv, current_function):
     wi.inject()
 
 
+"""
+
+    Add the graph viewer
+
+"""
+def addMiniGraphView(bv, current_function):
+
+    Initialize()
+
+    def CreateMiniGraphView():
+
+        class MiniGraphWidgetEventFilter(QtCore.QObject):
+            def __init__(self, mgw, parent=None):
+                QtCore.QObject.__init__(self, parent)
+                self.mgw = mgw
+                self.ignore = False
+
+            def eventFilter(self, obj, evt):
+
+                if obj == self:
+                    return False
+
+                if self.ignore:
+                    return False
+
+                if (obj == self.mgw) and (evt.type() == QtCore.QEvent.Paint):
+                    self.ignore = True
+                    ui._app().notify(obj, evt)
+                    self.ignore = False
+                    #return True
+
+                return QtCore.QObject.eventFilter(self, obj, evt)
+
+
+        class MiniGraphWidget(QtWidgets.QFrame):
+
+            def __init__(self, graph, parent=None):
+                QtWidgets.QFrame.__init__(self, parent)
+                self.graph = graph
+                self.setGeometry(0, 0, graph.width, graph.height)
+                self.prevFunction = None
+
+            """
+                Background: 0x2A2A2A
+                Foreground: 0x4A4A4A
+                Border    : 0x686868
+            """
+            def paintEvent(self, evt):
+
+                curFun = CurrentFunction()
+                if curFun != self.prevFunction:
+                    self.graph = curFun.create_graph()
+                    self.graph.layout_and_wait()
+                    self.prevFunction = curFun
+
+                painter = QtGui.QPainter()
+                painter.begin(self)
+                painter.setPen(Qt.black)
+                painter.fillRect(self.rect(), QtGui.QColor(0x2A2A2A))
+
+                # We need to scale off of the font... because reasons...
+                # TODO: need a better way to do this. This is gonna be reallllly slow.
+                # Since we can't depend on the improved function list to be enabled, we can't
+                # get the global font_object
+                font_object = [x for x in ui.Components.FunctionWindow().children() if x.__class__ is QtWidgets.QListView][0].font()
+                fm = QtGui.QFontMetrics(font_object)
+                fw = fm.width('W')
+                fh = fm.height()
+
+                # Scale in two phases:
+                #   1. Scale to fit on the x-axis
+                #   2. Scale to fit on the y-axis if we need to
+
+                aspect_ratio = float(fh) / fw
+
+                x_scale = self.size().width() / float(self.graph.width)
+                y_scale = x_scale * aspect_ratio #self.size().height() / float(self.graph.height)
+
+                ratio = 1.0
+                if (self.size().height() < (self.graph.height * y_scale)):
+                    ratio = float(self.size().height()) / (self.graph.height * y_scale)
+
+                # Adjust so that it's centered
+                x_off = 0
+                y_off = 0
+                if (self.graph.width * x_scale * ratio < self.size().width()):
+                    x_off = (self.size().width() - (self.graph.width * x_scale * ratio)) / 2.0
+
+                if (self.graph.height * y_scale * ratio < self.size().height()):
+                    y_off = (self.size().height() - (self.graph.height * y_scale * ratio)) / 2.0
+
+                # Translate and scale
+                painter.translate(x_off, y_off)
+                painter.scale(x_scale, y_scale)
+                painter.scale(ratio, ratio)
+
+                for node in self.graph:
+
+                    for edge in node.outgoing_edges:
+                        pen = QtGui.QPen()
+                        pen.setWidth(1)
+                        pen.setCosmetic(True)
+
+                        if edge.type == 'TrueBranch':
+                            pen.setColor(QtGui.QColor(0xA2D9AF))
+                        elif edge.type == 'FalseBranch':
+                            pen.setColor(QtGui.QColor(0xDE8F97))
+                        else:
+                            pen.setColor(QtGui.QColor(0x80C6E9))
+
+                        painter.setPen(pen)
+                        path = QtGui.QPainterPath()
+                        path.moveTo(edge.points[0][0], edge.points[0][1])
+                        for point in edge.points[1:]:
+                            path.lineTo(point[0], point[1])
+                        painter.drawPath(path)
+
+                    pen = QtGui.QPen()
+                    pen.setWidth(1)
+                    pen.setCosmetic(True)
+                    pen.setColor(QtGui.QColor(0x909090))
+                    painter.setPen(pen)
+
+                    painter.fillRect(node.x, node.y, node.width, node.height, QtGui.QColor(0x4A4A4A))
+                    painter.drawRect(node.x, node.y, node.width, node.height)
+
+                painter.resetTransform()
+
+                #print CurrentFunction()
+
+                # Draw the active region on the graph
+                #header = [x for x in ui._app().allWidgets() if x.metaObject().className() == 'DisassemblyFunctionHeader']
+                #p = header[0].parent()
+                #scroll_area = [x for x in p.children() if x.__class__ is QtWidgets.QAbstractScrollArea][0]
+                #print "Scroll Area: ({},{})".format(scroll_area.size().width(), scroll_area.size().height())
+                #print "Graph  Size: ({},{})".format(self.graph.width, self.graph.height)
+
+                painter.end()
+
+
+        tw = ui.Components.TabWidget()
+        graph = current_function.create_graph()
+        graph.layout()
+        mgv = MiniGraphWidget(graph, tw)
+        tw.addTab(mgv, "Graph")
+
+        mgv.filter = MiniGraphWidgetEventFilter(mgv, mgv)
+        ui._app().installEventFilter(mgv.filter)
+
+        mgv.show()
+
+        refs.append(mgv)
+        return mgv
+
+    wi = ui.WidgetInjector(CreateMiniGraphView)
+    wi.inject()
+
 #Util.AddMenuTree( {'Mod Func Win' : setupUI} )
 bn.PluginCommand.register_for_function("Tweak Function List", "Tweak Function List", tweakFunctionList)
+bn.PluginCommand.register_for_function("Add Graph Preview", "Add Graph Preview", addMiniGraphView)
+bn.PluginCommand.register_for_function("__leak_function", "", leakCurrentFunction)
+
 print "binja-ui-tweaks done loading"
