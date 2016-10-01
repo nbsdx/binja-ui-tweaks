@@ -37,8 +37,9 @@ Location: `Tools -> Tweak Function List`
 
 Location: `Tools -> Add Graph Preview`
 
-* Gives you a high-level overview of your function - similar to IDA's
+* Gives you a high-level overview of your function - similar to IDA's. It's located in the `Graph` tab next to `Xrefs`
 
 ### Bugs
 
-1. No known bugs
+1. Rendering the image takes a lot of resources, so if you're resizing it with a large function, there will be some lag. 
+   * Might look at rendering an SVG image that can be resized more easily when you enter a new function
