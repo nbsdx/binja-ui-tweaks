@@ -10,34 +10,31 @@ If you have suggestions for UI modifications, open a pull request and we can tal
 # Dependencies 
 
 1. Ubuntu 16.04 (only platform tested)
-2. Binary Ninja
+2. Binary Ninja (only dev channel has been tested)
 3. PyQt5 (Ubuntu Repo Version)
 4. [binja-ui-api](http://www.github.com/nbsdx/binja-ui-api)
 
 # Usage
 
-Drop "binja-ui-tweaks.py" into the plugins directory (must be able to see the BinjaUI directory).
+Place the `tweak-installer.py`, `.tweaks`, and `UITweaks` in the plugin directories. 
 
-Tweaks will show up in the "Tools" menu. Since they require the view from Binary Ninja, we cannot use the AddMenuTree function from BinjaUI.
+Available tweaks are listed in .tweaks. If you want to disable certain tweaks, you can comment them out by prefixing them with a `#`. 
+
+By default all tweaks are enabled.
 
 # Features
 
 ## Sortable Function Window
 
-Location: `Tools -> Tweak Function List`
-
-* Enables you to sort the function list.
+This tweak allows you to sort the function list via a header at the top of the panel. Clicking on the panel will change the sort direction (signified by an arrow pointing up or down).
 
 ### Bugs
 
-1. Will only work for one view. Whichever view that is is probably random if you have more than one open. I sugest not using more than one view with this tweak currently
-  * You might be able to enable the tweak, then open another view, but you probaly won't be able to enable the tweak for the new tab.
+* No known bugs
 
 ## Function Graph Preview
 
-Location: `Tools -> Add Graph Preview`
-
-* Gives you a high-level overview of your function - similar to IDA's. It's located in the `Graph` tab next to `Xrefs`
+Gives you a high-level overview of your function - similar to IDA's. It's located in the `Graph` tab next to `Xrefs`
 
 ### Bugs
 
