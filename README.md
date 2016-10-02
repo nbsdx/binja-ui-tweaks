@@ -3,6 +3,10 @@ UI Tweaks for Binary Ninja. Seems kinda stable, I just got it working, so there 
 
 Stability could be totally killed by any future updates to Binary Ninja, so take caution applying tweaks after an update.
 
+## Known Bugs
+
+The BinaryNinja API does not expose the current view, or current function through the PythonAPI. You have to get them from a Plugin callback. These Tweaks operate independantly of the plugin system, but they need access to the current view and function. In order to solve this problem, we register a function plugin callback that is invoked (via a leaked QAction) when we need the current function or view. This is super hacky, and results in a lot of spam in the Log window (because everytime a plugin completes, it prints out the time it took to execute). 
+
 # Suggestions
 
 If you have suggestions for UI modifications, open a pull request and we can talk about it :)
