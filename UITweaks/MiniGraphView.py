@@ -16,6 +16,10 @@ class MiniGraphWidget(QtWidgets.QFrame):
         #self.setGeometry(0, 0, graph.width, graph.height)
         self.prevFunction = None
 
+        self.trueBranchColor = QtGui.QColor(0xA2D9AF).darker()
+        self.falseBranchColor = QtGui.QColor(0xDE8F97).darker()
+        self.otherBranchColor = QtGui.QColor(0x80C6E9).darker()
+
     """
         Background: 0x2A2A2A
         Foreground: 0x4A4A4A
@@ -81,11 +85,11 @@ class MiniGraphWidget(QtWidgets.QFrame):
                 pen.setCosmetic(True)
 
                 if edge.type == 'TrueBranch':
-                    pen.setColor(QtGui.QColor(0xA2D9AF))
+                    pen.setColor(self.trueBranchColor)
                 elif edge.type == 'FalseBranch':
-                    pen.setColor(QtGui.QColor(0xDE8F97))
+                    pen.setColor(self.falseBranchColor)
                 else:
-                    pen.setColor(QtGui.QColor(0x80C6E9))
+                    pen.setColor(self.otherBranchColor)
 
                 painter.setPen(pen)
                 path = QtGui.QPainterPath()
@@ -101,7 +105,7 @@ class MiniGraphWidget(QtWidgets.QFrame):
             painter.setPen(pen)
 
             painter.fillRect(node.x, node.y, node.width, node.height, QtGui.QColor(0x4A4A4A))
-            painter.drawRect(node.x, node.y, node.width, node.height)
+            #painter.drawRect(node.x, node.y, node.width, node.height)
 
         painter.end()
 
