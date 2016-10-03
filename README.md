@@ -1,7 +1,7 @@
 # binja-ui-tweaks
 UI Tweaks for Binary Ninja.
 
-As of now, the tweaks seem to be rather stable on Ubuntu 16.06, other platforms are unknown.
+As of now, the tweaks seem to be rather stable on Ubuntu 16.06 and Windows 8.1, other platforms are unknown.
 
 # Usage / Installation
 
@@ -25,10 +25,17 @@ If you have suggestions for UI modifications, open a pull request and we can tal
 
 # Dependencies 
 
-1. Ubuntu 16.04 (only platform tested)
+1. Ubuntu 16.04, Win8.1 (only platforms tested)
 2. Binary Ninja [Version 1.0.dev-579]
-3. PyQt5 (Ubuntu Repo Version)
+3. PyQt5 [Python 2.7] (Ubuntu Repo Version) (Built from source on Win8.1)
 4. [binja-ui-api](http://www.github.com/nbsdx/binja-ui-api)
+
+Instructions for building PyQt5 for Python2.7 on Windows will be released shortly. In the meantime, I figured it out from these two links: 
+
+*http://blog.abstractfactory.io/pyqt5-1-1-for-python-2-7/
+*https://gist.github.com/nbsdx/67f41bdc12cc6728d0727a73c5b1ca3f
+
+OSX testing will be coming in a bit, I want to get Win8.1 and Ubuntu settled first.
 
 # Features
 
