@@ -1,7 +1,7 @@
 # binja-ui-tweaks
-UI Tweaks for Binary Ninja. Seems kinda stable, I just got it working, so there may be some things that I missed. 
+UI Tweaks for Binary Ninja.
 
-Stability could be totally killed by any future updates to Binary Ninja, so take caution applying tweaks after an update.
+As of now, the tweaks seem to be rather stable on Ubuntu 16.06, other platforms are unknown.
 
 ## UI Wtih All Current Tweaks Applied 
 
