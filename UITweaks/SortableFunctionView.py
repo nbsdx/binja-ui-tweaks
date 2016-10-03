@@ -27,64 +27,6 @@ class MyTableView(QtWidgets.QTableView):
             ui._app().notify(self.lv, evt)
 
 """
-    Super Hacky EventFilter that gets installed on the QApplication
-    so we can catch all KeyEvents that originated on our Table View.
-    For some reason, I was unable to get keyPressEvent on the TableView
-    to work correctly. I'm guessing it has to do with trying to inject
-    a widget from Python into a native widget. No idea.
-
-"""
-class MyEventFilter(QtCore.QObject):
-
-    def __init__(self, old_view, view, edit):
-        QtCore.QObject.__init__(self, None)
-        self.old_view = old_view
-        self.view = view
-        self.edit = edit
-        self.ignore = False
-        self.isSearching = False
-        self.originalPosition = None
-
-    def eventFilter(self, obj, evt):
-        # We're infinite looping when we notify
-        # the target of its event, so disable
-        # ourself if we're delivering the event
-        if self.ignore:
-            return super(MyEventFilter,self).eventFilter(obj,evt)
-
-        # Get the keypresses on the QTableView we make. For some reason
-        # we can't see them...
-        if (obj == self.view) and (evt.type() == QtCore.QEvent.KeyPress):
-
-            if not self.isSearching:
-                self.originalPosition = view.verticalScrollBar().sliderPosition()
-
-            self.isSearching = True
-            self.ignore = True
-            ui._app().notify(self.view, evt)
-            self.ignore = False
-            return True
-
-        # Refocus on the function list when the line edit hides itself
-        elif (obj == self.edit) and (evt.type() == QtCore.QEvent.Hide):
-            self.isSearching = False
-            view.setFocus(Qt.ActiveWindowFocusReason)
-            if self.originalPosition:
-                view.verticalScrollBar().setSliderPosition(self.originalPosition)
-                self.originalPosition = None
-
-            return True
-
-        # Handle Font Changes
-        elif (obj == self.old_view) and (evt.type() == QtCore.QEvent.FontChange):
-            global font_object
-            font_object = self.old_view.font()
-            self.view.setFont(self.old_view.font())
-            return True
-
-        return super(MyEventFilter,self).eventFilter(obj, evt)
-
-"""
     A custom QSortFilterProxyModel that does two things:
         1. Defines a header for the Function List
         2. Handles moving to a function in the UI
@@ -159,7 +101,7 @@ class Plugin:
 
         # Handle Font Changes
         elif (obj == self.old_widget) and (evt.type() == QtCore.QEvent.FontChange):
-            self.view.setFont(ui.Util.GetFont())
+            self.widget.setFont(ui.Util.GetFont())
             return True
 
 
@@ -172,7 +114,7 @@ class Plugin:
         #func_list = ui.Components.FunctionWindow()
 
         # Find the QListView that contains the original Function Model
-        sys.__stdout__.write("FunctionList.children(): {}\n".format(func_list.children()))
+        #sys.__stdout__.write("FunctionList.children(): {}\n".format(func_list.children()))
         #self.old_widget = [x for x in func_list.children() if x.__class__ is QtWidgets.QListView][0]
         self.old_widget = func_list
 
@@ -184,7 +126,8 @@ class Plugin:
         self.filter_edit = func_list.parent().findChildren(QtWidgets.QLineEdit)[0]
         #self.filter_edit = [x for x in func_list.children() if x.__class__ is QtWidgets.QLineEdit][0]
 
-        ui.Util.InstallEventFilterOnObject(ui._app(), self.eventFilter)
+        #ui.Util.InstallEventFilterOnObject(ui._app(), self.eventFilter)
+        ui.Util.InstallEventFilterOnObject(view_widget, self.eventFilter)
 
         # Add our new QTableView to the function widget.
         func_list.parent().layout().addWidget(self.widget)
@@ -222,10 +165,10 @@ class Plugin:
         from . import Util
         current_function = Util.CurrentFunction()
         if current_function:
-            func_name = ui.Util.CurrentFunction().symbol.full_name
+            func_name = current_function.symbol.full_name
             index_list = sorter.match(sorter.index(0,0), Qt.DisplayRole, func_name, -1, QtCore.Qt.MatchExactly)
             if len(index_list) != 0:
-                self.widget.scrollTo(index_list[0], QtWidgets.QAbstractItemself.widget.PositionAtCenter)
+                self.widget.scrollTo(index_list[0], QtWidgets.QAbstractItemView.PositionAtCenter)
                 print sorter.itemData(index_list[0])
 
         refs.append(self.widget)

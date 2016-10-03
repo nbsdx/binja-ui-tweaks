@@ -9,7 +9,9 @@ Stability could be totally killed by any future updates to Binary Ninja, so take
 
 ## Known Bugs
 
-The BinaryNinja API does not expose the current view, or current function through the PythonAPI. You have to get them from a Plugin callback. These Tweaks operate independantly of the plugin system, but they need access to the current view and function. In order to solve this problem, we register a function plugin callback that is invoked (via a leaked QAction) when we need the current function or view. This is super hacky, and results in a lot of spam in the Log window (because everytime a plugin completes, it prints out the time it took to execute). 
+The BinaryNinja API does not expose the current view, or current function through the PythonAPI. You have to get them from a Plugin callback. These Tweaks operate independantly of the plugin system, but they need access to the current view and function. In order to solve this problem, we register a function plugin callback that is invoked (via a leaked QAction) when we need the current function or view. This is super hacky, and results in a lot of spam in the Log window (because everytime a plugin completes, it prints out the time it took to execute).
+
+Tweaks do not work with multiple tabs currently. For some reason, Qt (or PyQt) is causing the injected event filters to no longer trigger, which renders the tweaks non-responsive. It is not recommended that you open additional tabs when using these UI tweaks.
 
 # Suggestions
 
@@ -42,9 +44,8 @@ This tweak allows you to sort the function list via a header at the top of the p
 
 ## Function Graph Preview
 
-Gives you a high-level overview of your function - similar to IDA's. It's located in the `Graph` tab next to `Xrefs`
+Gives you a high-level overview of your function - similar to IDA's. It's located in the `Graph` tab next to `Xrefs`. Click on the graph to move the current view.
 
 ### Bugs
 
-1. Rendering the image takes a lot of resources, so if you're resizing it with a large function, there will be some lag. 
-   * Might look at rendering an SVG image that can be resized more easily when you enter a new function
+* No known bugs

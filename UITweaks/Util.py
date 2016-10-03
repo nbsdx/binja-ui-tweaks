@@ -61,6 +61,7 @@ def InitUtils():
         sys.__stdout__.write("[Action: {}]\n".format(action.text()))
         if action.text() == "__leakFunction":
             action.setVisible(False)
+            toolsMenu.removeAction(action)
             _leakedFunctionAction = action
             sys.__stdout__.write("Found __leakFunction QAction\n")
 
