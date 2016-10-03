@@ -3,6 +3,14 @@ UI Tweaks for Binary Ninja.
 
 As of now, the tweaks seem to be rather stable on Ubuntu 16.06, other platforms are unknown.
 
+# Usage / Installation
+
+Place the `tweak-installer.py`, `.tweaks`, and `UITweaks` in the plugin directories. 
+
+Available tweaks are listed in .tweaks. If you want to disable certain tweaks, you can comment them out by prefixing them with a `#`. 
+
+By default all tweaks are enabled.
+
 ## UI Wtih All Current Tweaks Applied 
 
 ![Image of All Available Tweaks](http://i.imgur.com/eyiojnd.png)
@@ -21,14 +29,6 @@ If you have suggestions for UI modifications, open a pull request and we can tal
 2. Binary Ninja [Version 1.0.dev-579]
 3. PyQt5 (Ubuntu Repo Version)
 4. [binja-ui-api](http://www.github.com/nbsdx/binja-ui-api)
-
-# Usage
-
-Place the `tweak-installer.py`, `.tweaks`, and `UITweaks` in the plugin directories. 
-
-Available tweaks are listed in .tweaks. If you want to disable certain tweaks, you can comment them out by prefixing them with a `#`. 
-
-By default all tweaks are enabled.
 
 # Features
 
