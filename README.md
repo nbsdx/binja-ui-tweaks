@@ -5,7 +5,7 @@ Stability could be totally killed by any future updates to Binary Ninja, so take
 
 ## UI Wtih All Current Tweaks Applied 
 
-![Image of Yaktocat](http://i.imgur.com/hkKKUGB.png)
+![Image of Yaktocat](http://i.imgur.com/eyiojnd.png)
 
 ## Known Bugs
 
