@@ -243,9 +243,9 @@ class MiniGraphWidget(QtWidgets.QFrame):
                 )
 
 class Plugin:
+    name = "mini-function-graph"
 
     def __init__(self):
-        self.name = "mini-function-graph"
         self.ignore = False
         self.mousePressed = False
 
@@ -300,7 +300,8 @@ class Plugin:
         # so it gets GC'd. Hold a ref to it so you don't lose the widget
         refs.append(self.widget)
 
-        ui.Util.InstallEventFilterOnObject(view_widget, self.eventFilter)
+        ui.Util.EventFilterManager.InstallOnObject(view_widget, self.eventFilter)
+        #ui.Util.InstallEventFilterOnObject(view_widget, self.eventFilter)
 
         widget.show()
 

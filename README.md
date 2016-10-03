@@ -5,13 +5,11 @@ Stability could be totally killed by any future updates to Binary Ninja, so take
 
 ## UI Wtih All Current Tweaks Applied 
 
-![Image of Yaktocat](http://i.imgur.com/eyiojnd.png)
+![Image of All Available Tweaks](http://i.imgur.com/eyiojnd.png)
 
 ## Known Bugs
 
 The BinaryNinja API does not expose the current view, or current function through the PythonAPI. You have to get them from a Plugin callback. These Tweaks operate independantly of the plugin system, but they need access to the current view and function. In order to solve this problem, we register a function plugin callback that is invoked (via a leaked QAction) when we need the current function or view. This is super hacky, and results in a lot of spam in the Log window (because everytime a plugin completes, it prints out the time it took to execute).
-
-Tweaks do not work with multiple tabs currently. For some reason, Qt (or PyQt) is causing the injected event filters to no longer trigger, which renders the tweaks non-responsive. It is not recommended that you open additional tabs when using these UI tweaks.
 
 # Suggestions
 
@@ -20,7 +18,7 @@ If you have suggestions for UI modifications, open a pull request and we can tal
 # Dependencies 
 
 1. Ubuntu 16.04 (only platform tested)
-2. Binary Ninja (only dev channel has been tested)
+2. Binary Ninja [Version 1.0.dev-579]
 3. PyQt5 (Ubuntu Repo Version)
 4. [binja-ui-api](http://www.github.com/nbsdx/binja-ui-api)
 

@@ -60,14 +60,15 @@ class MyModel(QtCore.QSortFilterProxyModel):
             print "Multiple symbols found"
 
 class Plugin:
+    name = "sortable-function-window"
 
     def __init__(self):
-        self.name = "sortable-function-window"
         self.ignore = False
         self.isSearching = False
         self.widet = None
         self.old_widget = None
         self.filter_edit = None
+        self.originalPosition = None
 
     def eventFilter(self, obj, evt):
         # We're infinite looping when we notify
@@ -89,21 +90,24 @@ class Plugin:
             self.ignore = False
             return True
 
-        # Refocus on the function list when the line edit hides itself
-        elif (obj == self.filter_edit) and (evt.type() == QtCore.QEvent.Hide):
+    def lineEditFilter(self, obj, evt):
+        if (evt.type() == QtCore.QEvent.Hide) and obj == self.filter_edit:
             self.isSearching = False
             self.widget.setFocus(Qt.ActiveWindowFocusReason)
             if self.originalPosition:
                 self.widget.verticalScrollBar().setSliderPosition(self.originalPosition)
                 self.originalPosition = None
+            return True
+        return False
+
+    def fontChangeFilter(self, obj, evt):
+        if (evt.type() == QtCore.QEvent.FontChange) and (obj == self.old_widget):
+            self.widget.setFont(self.old_widget.font())
+            fm = QtGui.QFontMetrics(self.old_widget.font())
+            self.widget.verticalHeader().setDefaultSectionSize(fm.height())
 
             return True
-
-        # Handle Font Changes
-        elif (obj == self.old_widget) and (evt.type() == QtCore.QEvent.FontChange):
-            self.widget.setFont(ui.Util.GetFont())
-            return True
-
+        return False
 
     def install(self, view_widget):
 
@@ -117,6 +121,7 @@ class Plugin:
         #sys.__stdout__.write("FunctionList.children(): {}\n".format(func_list.children()))
         #self.old_widget = [x for x in func_list.children() if x.__class__ is QtWidgets.QListView][0]
         self.old_widget = func_list
+        ui.Util.EventFilterManager.InstallOnObject(self.old_widget, self.fontChangeFilter)
 
         # Construct our new QTableView that forwards events on to the original ListView
         self.widget = MyTableView(func_list, self.old_widget)
@@ -125,9 +130,10 @@ class Plugin:
         # globally (very hacky) and intercept any events triggered by the new QTableView
         self.filter_edit = func_list.parent().findChildren(QtWidgets.QLineEdit)[0]
         #self.filter_edit = [x for x in func_list.children() if x.__class__ is QtWidgets.QLineEdit][0]
-
+        ui.Util.EventFilterManager.InstallOnObject(self.filter_edit, self.lineEditFilter)
         #ui.Util.InstallEventFilterOnObject(ui._app(), self.eventFilter)
-        ui.Util.InstallEventFilterOnObject(view_widget, self.eventFilter)
+        #ui.Util.InstallEventFilterOnObject(view_widget, self.eventFilter)
+        ui.Util.EventFilterManager.InstallOnObject(view_widget, self.eventFilter)
 
         # Add our new QTableView to the function widget.
         func_list.parent().layout().addWidget(self.widget)

@@ -15,6 +15,7 @@ from BinjaUI import Util
 
 enabled = []
 enabledTweaks = []
+installedTweaks = []
 done = False
 
 # open the .tweaks file to get config
@@ -35,7 +36,7 @@ if len(enabled) == 0:
 
 if not done:
 
-    def TabWidgetEventFilter(obj, evt):
+    def StackedWidgetEventFilter(obj, evt):
         if obj == stackedWidget:
             if (evt.type() == QtCore.QEvent.ChildAdded) and (evt.child().isWidgetType()) and (evt.child().metaObject().className() == 'ViewFrame'):
 
@@ -44,15 +45,17 @@ if not done:
 
                 # Install the view modification
                 for tweak in enabledTweaks:
-                    wi = ui.WidgetInjector(lambda :tweak.install(evt.child()))
-                    wi.inject()
+                    new_tweak = tweak()
+                    wi = ui.WidgetInjector(lambda :new_tweak.install(evt.child()))
+                    if wi.inject():
+                        installedTweaks.append(new_tweak)
 
 
     tabWidgets    = [w for w in ui._app().allWidgets() if w.__class__ is QtWidgets.QTabWidget]
     mainTabWidget = [w for w in tabWidgets if w.parent().__class__ is QtWidgets.QMainWindow][0]
     stackedWidget = [w for w in mainTabWidget.children() if w.__class__ is QtWidgets.QStackedWidget][0]
 
-    ui.Util.InstallEventFilterOnObject(stackedWidget, TabWidgetEventFilter)
+    ui.Util.EventFilterManager.InstallOnObject(stackedWidget, StackedWidgetEventFilter)
 
     for tweak in Tweaks.Available:
         if tweak.name in enabled:
