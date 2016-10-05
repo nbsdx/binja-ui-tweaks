@@ -19,6 +19,8 @@ By default all tweaks are enabled.
 
 The BinaryNinja API does not expose the current view, or current function through the PythonAPI. You have to get them from a Plugin callback. These Tweaks operate independantly of the plugin system, but they need access to the current view and function. In order to solve this problem, we register a function plugin callback that is invoked (via a leaked QAction) when we need the current function or view. This is super hacky, and results in a lot of spam in the Log window (because everytime a plugin completes, it prints out the time it took to execute).
 
+Tweak specific bugs can be viewed by selecting the relevent label on the `Issues` page of this project
+
 # Suggestions
 
 If you have suggestions for UI modifications, open a pull request and we can talk about it :)
@@ -43,14 +45,7 @@ OSX testing will be coming in a bit, I want to get Win8.1 and Ubuntu settled fir
 
 This tweak allows you to sort the function list via a header at the top of the panel. Clicking on the panel will change the sort direction (signified by an arrow pointing up or down).
 
-### Bugs
-
-* No known bugs
-
 ## Function Graph Preview
 
 Gives you a high-level overview of your function - similar to IDA's. It's located in the `Graph` tab next to `Xrefs`. Click on the graph to move the current view.
 
-### Bugs
-
-* No known bugs
