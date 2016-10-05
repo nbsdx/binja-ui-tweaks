@@ -48,16 +48,15 @@ class MyModel(QtCore.QSortFilterProxyModel):
     def onActivated(self, index):
         from . import Util
         bv = Util.CurrentView()
-        symbols = bv.get_symbols_by_name(self.data(index))
+        func_name = self.data(index)
+        #symbols = [x.symbol for x in bv.functions if x.symbol.full_name == func_name]
+        symbol = next((x.symbol for x in bv.functions if x.symbol.full_name == func_name), None)
+        #symbols = bv.get_symbols_by_name(self.data(index))
 
-        if len(symbols) == 1:
-            bv.file.navigate(bv.file.view, symbols[0].address)
-
-        elif len(symbols) == 0:
-            print "No symbol with name [[{}]] found".format(self.data(index))
-
+        if symbol:
+            bv.file.navigate(bv.file.view, symbol.address)
         else:
-            print "Multiple symbols found"
+            print "No symbol with name [[{}]] found".format(self.data(index))
 
 class Plugin:
     name = "sortable-function-window"
