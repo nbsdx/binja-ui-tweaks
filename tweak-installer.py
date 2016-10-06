@@ -50,12 +50,47 @@ if not done:
                     if wi.inject():
                         installedTweaks.append(new_tweak)
 
+    def f(obj, evt):
+        if evt.type() == QtCore.QEvent.ActionAdded:
+            print "Obj: {}, Evt: {}".format(obj, evt.action().text())
+
+        return False
+
+    def options_filter(obj, evt):
+        if evt.type() == QtCore.QEvent.ChildAdded:
+            """
+            if evt.child().__class__ is QtCore.QObject:
+                print "Children: {}".format(evt.child().children())
+                #print "Actions : {}".format(evt.child().actions())
+            elif evt.child().__class__ is QtWidgets.QWidget:
+                print 'Children? {}'.format(evt.child().children())
+                print 'ACtions ? {}'.format(evt.child().actions())
+            """
+            ui.Util.EventFilterManager.InstallOnObject(evt.child(), f)
+
+        return False
+
+    def StatusBarEventFilter(obj, evt):
+        if evt.type() == QtCore.QEvent.ChildAdded:
+            if evt.child().metaObject().className() == 'StatusBarWidget':
+                print evt.child().children()[1].text()[0:8]
+                print evt.child().children()[1].children()
+
+                if len(evt.child().children()[1].children()) == 0 or True:
+                    ui.Util.EventFilterManager.InstallOnObject(evt.child().children()[1], options_filter)
+                else:
+                    print 'wtf'
+                    for x in evt.child().children()[1].children():
+                        print x
+        return False
+
 
     tabWidgets    = [w for w in ui._app().allWidgets() if w.__class__ is QtWidgets.QTabWidget]
     mainTabWidget = [w for w in tabWidgets if w.parent().__class__ is QtWidgets.QMainWindow][0]
     stackedWidget = [w for w in mainTabWidget.children() if w.__class__ is QtWidgets.QStackedWidget][0]
 
     ui.Util.EventFilterManager.InstallOnObject(stackedWidget, StackedWidgetEventFilter)
+    ui.Util.EventFilterManager.InstallOnObject([w for w in ui._app().allWidgets() if w.__class__ is QtWidgets.QMainWindow][0].statusBar(), StatusBarEventFilter)
 
     for tweak in Tweaks.Available:
         if tweak.name in enabled:

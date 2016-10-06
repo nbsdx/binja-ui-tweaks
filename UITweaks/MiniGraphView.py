@@ -279,6 +279,10 @@ class Plugin:
 
         return False
 
+    def toggled(self, state):
+
+        print "TOGGLED: {}".format(state)
+
     """
         Install the UI plugin
     """
@@ -301,8 +305,23 @@ class Plugin:
         refs.append(self.widget)
 
         ui.Util.EventFilterManager.InstallOnObject(view_widget, self.eventFilter)
-        #ui.Util.InstallEventFilterOnObject(view_widget, self.eventFilter)
 
+        """
+        mainwindow = [x for x in ui._app().allWidgets() if x.__class__ is QtWidgets.QMainWindow][0]
+        sb = mainwindow.statusBar()
+        for x in sb.children():
+            sys.__stdout__.write("{}\n".format(x.metaObject().className()))
+
+        options_menu = [x for x in sb.children() if x.metaObject().className() == 'StatusBarWidget'][0]
+
+        for x in options_menu.children():
+            print x.__class__
+            if x.__class__ is QtWidgets.QAction and x.isCheckable():
+                aw = x.associatedWidgets()
+                for x in aw:
+                    QtCore.QObject.connect(we, QtCore.SIGNAL('toggled'), self.triggered)
+                    #x.triggered.connect(self.triggered)
+        """
         widget.show()
 
         return True
