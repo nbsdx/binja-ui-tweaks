@@ -33,8 +33,9 @@ class MyTableView(QtWidgets.QTableView):
 """
 class MyModel(QtCore.QSortFilterProxyModel):
 
-    def __init__(self):
+    def __init__(self, view):
         QtCore.QSortFilterProxyModel.__init__(self)
+        self.view = view
 
     def headerData(self, sec, orientation, role=Qt.DisplayRole):
         if (sec == 0) and (orientation == Qt.Horizontal) and (role == Qt.DisplayRole):
@@ -46,17 +47,13 @@ class MyModel(QtCore.QSortFilterProxyModel):
         if there's more than one available.
     """
     def onActivated(self, index):
-        from . import Util
-        bv = Util.CurrentView()
-        func_name = self.data(index)
-        #symbols = [x.symbol for x in bv.functions if x.symbol.full_name == func_name]
-        symbol = next((x.symbol for x in bv.functions if x.symbol.full_name == func_name), None)
-        #symbols = bv.get_symbols_by_name(self.data(index))
-
-        if symbol:
-            bv.file.navigate(bv.file.view, symbol.address)
+        meta = self.view.metaObject()
+        for i in xrange(0, meta.methodCount()):
+            if meta.method(i).name() == 'goToFunction':
+                meta.method(i).invoke(self.view, QtAutoConnection, QtCore.Q_ARG(QtCore.QModelIndex, self.mapToSource(index)))
+                break
         else:
-            print "No symbol with name [[{}]] found".format(self.data(index))
+            print "Could not find `goToFunction` slot. Please file a bug report on binja-ui-tweaks."
 
 class Plugin:
     name = "sortable-function-window"
@@ -139,7 +136,7 @@ class Plugin:
 
         # Setup our proxy model
         orig_model = self.old_widget.model()
-        sorter = MyModel()
+        sorter = MyModel(func_list)
         self.widget.activated.connect(sorter.onActivated)
         sorter.setSourceModel(orig_model)
 
