@@ -50,7 +50,7 @@ class MyModel(QtCore.QSortFilterProxyModel):
         meta = self.view.metaObject()
         for i in xrange(0, meta.methodCount()):
             if meta.method(i).name() == 'goToFunction':
-                meta.method(i).invoke(self.view, QtAutoConnection, QtCore.Q_ARG(QtCore.QModelIndex, self.mapToSource(index)))
+                meta.method(i).invoke(self.view, Qt.AutoConnection, QtCore.Q_ARG(QtCore.QModelIndex, self.mapToSource(index)))
                 break
         else:
             print "Could not find `goToFunction` slot. Please file a bug report on binja-ui-tweaks."
